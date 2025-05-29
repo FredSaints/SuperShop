@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SuperShop.Data;
 using SuperShop.Data.Entities;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace SuperShop.Controllers
 {
+   
     public class ProductsController : Controller
     {
         private readonly IProductRepository _productRepository;
@@ -54,6 +56,7 @@ namespace SuperShop.Controllers
         }
 
         // GET: Products/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -85,23 +88,24 @@ namespace SuperShop.Controllers
             return View(model);
         }
 
-      /*  private Product ToProduct(ProductViewModel model, string path)
-        {
-            return new Product()
-            {
-                Id = model.Id,
-                ImageUrl = path,
-                IsAvailable = model.IsAvailable,
-                LastPurchase = model.LastPurchase,
-                LastSale = model.LastSale,
-                Name = model.Name,
-                Price = model.Price,
-                Stock = model.Stock,
-                User = model.User
-            };
-        }*/
+        /*  private Product ToProduct(ProductViewModel model, string path)
+          {
+              return new Product()
+              {
+                  Id = model.Id,
+                  ImageUrl = path,
+                  IsAvailable = model.IsAvailable,
+                  LastPurchase = model.LastPurchase,
+                  LastSale = model.LastSale,
+                  Name = model.Name,
+                  Price = model.Price,
+                  Stock = model.Stock,
+                  User = model.User
+              };
+          }*/
 
         // GET: Products/Edit/5
+        [Authorize]
         public async Task<ActionResult> Edit(int? id)
         {
             if (id is null)
