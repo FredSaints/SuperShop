@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using SuperShop.Data.Entities;
 using SuperShop.Helpers;
 using SuperShop.Models;
 using System.Linq;
@@ -51,6 +53,54 @@ namespace SuperShop.Controllers
         {
             await _userHelper.LogoutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterNewUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userHelper.GetUserByEmailAsync(model.UserName);
+                if (user is null)
+                {
+                    user = new User()
+                    {
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        Email = model.UserName,
+                        UserName = model.UserName
+                    };
+
+                    var result = await _userHelper.AddUserAsync(user, model.Password);
+                    if (result != IdentityResult.Success)
+                    {
+                        ModelState.AddModelError(string.Empty, "The user could not be created");
+                        return View(model);
+                    }
+
+                    var loginViewModel = new LoginViewModel()
+                    {
+                        Password = model.Password,
+                        RememberMe = false,
+                        Username = model.UserName
+                    };
+
+                    var result2 = await _userHelper.LoginAsync(loginViewModel);
+                    if (result2.Succeeded)
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+
+                    ModelState.AddModelError(string.Empty, "The user could not be logged");
+
+                }
+            }
+            return View(model);
         }
     }
 }

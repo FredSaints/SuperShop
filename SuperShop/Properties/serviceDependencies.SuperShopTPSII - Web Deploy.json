@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "mssql3": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.Web/sites/SuperShopTPSII/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsDefaultConnection_80D1F62859",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/supershopdbserverfs/databases/SuperShop_db",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:DefaultConnection",
+      "dynamicId": null
+    }
+  }
+}

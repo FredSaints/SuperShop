@@ -7,7 +7,7 @@
       "defaultValue": "SuperShopResourceGroup",
       "metadata": {
         "_parameterType": "resourceGroup",
-        "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
+        "description": "Nome do grupo de recursos do recurso. É recomendável colocar os recursos no mesmo grupo de recursos para melhor acompanhamento."
       }
     },
     "resourceGroupLocation": {
@@ -15,7 +15,7 @@
       "defaultValue": "canadacentral",
       "metadata": {
         "_parameterType": "location",
-        "description": "Location of the resource group. Resource groups could have different location than resources."
+        "description": "Local do grupo de recursos. Os grupos de recursos podem ter um local diferente do local dos recursos."
       }
     },
     "resourceLocation": {
@@ -23,7 +23,7 @@
       "defaultValue": "[parameters('resourceGroupLocation')]",
       "metadata": {
         "_parameterType": "location",
-        "description": "Location of the resource. By default use resource group's location, unless the resource provider is not supported there."
+        "description": "Local do recurso. Por padrão, use o local do grupo de recursos, a menos que não haja suporte para o provedor de recursos."
       }
     }
   },
@@ -36,7 +36,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "name": "[concat(parameters('resourceGroupName'), 'Deployment', uniqueString(concat('SuperShop_dataBase', subscription().subscriptionId)))]",
+      "name": "[concat(parameters('resourceGroupName'), 'Deployment', uniqueString(concat('SuperShop_db', subscription().subscriptionId)))]",
       "resourceGroup": "[parameters('resourceGroupName')]",
       "apiVersion": "2019-10-01",
       "dependsOn": [
@@ -51,7 +51,7 @@
             {
               "kind": "v12.0",
               "location": "[parameters('resourceLocation')]",
-              "name": "supershop-databasedbserver",
+              "name": "supershopdbserverfs",
               "type": "Microsoft.Sql/servers",
               "apiVersion": "2017-10-01-preview"
             },
@@ -63,11 +63,11 @@
               },
               "kind": "v12.0,user",
               "location": "[parameters('resourceLocation')]",
-              "name": "supershop-databasedbserver/SuperShop_dataBase",
+              "name": "supershopdbserverfs/SuperShop_db",
               "type": "Microsoft.Sql/servers/databases",
               "apiVersion": "2017-10-01-preview",
               "dependsOn": [
-                "supershop-databasedbserver"
+                "supershopdbserverfs"
               ]
             }
           ]
