@@ -58,6 +58,18 @@ namespace SuperShop.Data
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteDetailTempAsync(int id)
+        {
+            var orderDetailTemp = await _context.OrderDetailTemp.FindAsync(id);
+            if (orderDetailTemp is null)
+            {
+                return;
+            }
+
+            _context.OrderDetailTemp.Remove(orderDetailTemp);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<IQueryable<OrderDetailTemp>> GetDetailsTempAsync(string userName)
         {
             var user = await _userHelper.GetUserByEmailAsync(userName);
