@@ -18,6 +18,20 @@ namespace SuperShop.Data
             _userHelper = userHelper;
         }
 
+        public async Task<IQueryable<OrderDetailTemp>> GetDetailsTempAsync(string userName)
+        {
+            var user = await _userHelper.GetUserByEmailAsync(userName);
+            if (user is null)
+            {
+                return null;
+            }
+
+            return _context.OrderDetailTemp
+                .Include(p => p.Product)
+                .Where(u => u.User == user)
+                .OrderBy(o => o.Product.Name);
+        }
+
         public async Task<IQueryable<Order>> GetOrderAsync(string userName)
         {
             var user = await _userHelper.GetUserByEmailAsync(userName);
