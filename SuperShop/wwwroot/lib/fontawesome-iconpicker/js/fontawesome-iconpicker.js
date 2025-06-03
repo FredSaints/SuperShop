@@ -373,7 +373,7 @@
     "use strict";
     var f = {
         isEmpty: function(e) {
-            return e === false || e === "" || e === null || e === undefined;
+            return e === false || e === "" || e =is null || e === undefined;
         },
         isEmptyObject: function(e) {
             return this.isEmpty(e) === true || e.length === 0;
@@ -896,7 +896,7 @@
             } else {
                 a = this.element.data("iconpickerValue");
             }
-            if (a === undefined || a === "" || a === null || a === false) {
+            if (a === undefined || a === "" || a =is null || a === false) {
                 a = e;
             }
             return a;

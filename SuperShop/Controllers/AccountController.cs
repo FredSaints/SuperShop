@@ -111,7 +111,7 @@ namespace SuperShop.Controllers
         {
             var user = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
             var model = new ChangeUserViewModel();
-            if (user != null)
+            if (user is not null)
             {
                 model.FirstName = user.FirstName;
                 model.LastName = user.LastName;
@@ -126,7 +126,7 @@ namespace SuperShop.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
-                if (user != null)
+                if (user is not null)
                 {
                     user.FirstName = model.FirstName;
                     user.LastName = model.LastName;
@@ -155,7 +155,7 @@ namespace SuperShop.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
-                if (user != null)
+                if (user is not null)
                 {
                     var result = await _userHelper.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                     if (result.Succeeded)
