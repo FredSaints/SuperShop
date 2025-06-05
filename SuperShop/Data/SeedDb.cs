@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SuperShop.Data.Entities;
 using SuperShop.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,6 +29,22 @@ namespace SuperShop.Data
             await _userHelper.CheckRoleAsync("Admin");
             await _userHelper.CheckRoleAsync("Costumer");
 
+            if (!_context.Countries.Any())
+            {
+                var cities = new List<City>();
+                cities.Add(new City { Name = "Lisboa"});
+                cities.Add(new City { Name = "Porto"});
+                cities.Add(new City { Name = "Faro"});
+
+                _context.Countries.Add(new Country()
+                {
+                    Cities = cities,
+                    Name = "Portugal"
+                });   
+                
+                await _context.SaveChangesAsync();
+            }
+
             var user = await _userHelper.GetUserByEmailAsync("fred.sousa.santos@gmail.com");
             if (user is null)
             {
@@ -36,7 +53,11 @@ namespace SuperShop.Data
                     FirstName = "Frederico",
                     LastName = "Santos",
                     Email = "fred.sousa.santos@gmail.com",
-                    UserName = "fred.sousa.santos@gmail.com"
+                    UserName = "fred.sousa.santos@gmail.com",
+                    PhoneNumber = "215547856",
+                    Address = "Rua Jau 33",
+                    CityId = _context.Countries.FirstOrDefault().Cities.FirstOrDefault().Id,
+                    City = _context.Countries.FirstOrDefault().Cities.FirstOrDefault()
                 };
 
                 var result = await _userHelper.AddUserAsync(user,"123456");

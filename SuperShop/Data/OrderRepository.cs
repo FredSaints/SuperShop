@@ -4,7 +4,6 @@ using SuperShop.Helpers;
 using SuperShop.Models;
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace SuperShop.Data
@@ -110,6 +109,19 @@ namespace SuperShop.Data
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeliveryOrder(DeliveryViewModel model)
+        {
+            var order = await _context.Orders.FindAsync(model.Id);
+            if (order is null)
+            {
+                return;
+            }
+
+            order.DeliveryDate = model.DeliveryDate;
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<IQueryable<OrderDetailTemp>> GetDetailsTempAsync(string userName)
         {
             var user = await _userHelper.GetUserByEmailAsync(userName);
@@ -146,6 +158,11 @@ namespace SuperShop.Data
                 .ThenInclude(p => p.Product)
                 .Where(u => u.User == user)
                 .OrderByDescending(o => o.OrderDate);
+        }
+
+        public async Task<Order> GetOrderAsync(int id)
+        {
+            return await _context.Orders.FindAsync(id);
         }
 
         public async Task ModifyOrderDetailTempQuantityAsync(int id, double quantity)

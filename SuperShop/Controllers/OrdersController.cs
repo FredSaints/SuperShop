@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using SuperShop.Data;
 using SuperShop.Models;
+using System;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
 namespace SuperShop.Controllers
@@ -95,6 +97,40 @@ namespace SuperShop.Controllers
             }
 
             return RedirectToAction("Create");
+        }
+
+        public async Task<IActionResult> Deliver(int? id)
+        {
+            if (id is null)
+            {
+                return NotFound();
+            }
+
+            var order = await _orderRepository.GetOrderAsync(id.Value);
+            if (order is null)
+            {
+                return NotFound();
+            }
+
+            var model = new DeliveryViewModel()
+            {
+                Id = order.Id,
+                DeliveryDate = DateTime.Today
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Deliver(DeliveryViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                await _orderRepository.DeliveryOrder(model);
+                return RedirectToAction("Index");
+            }
+
+            return View();
         }
     }
 }
