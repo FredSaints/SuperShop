@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Bcpg;
 using SuperShop.Data;
 using SuperShop.Data.Entities;
 using SuperShop.Helpers;
@@ -21,15 +22,18 @@ namespace SuperShop.Controllers
         private readonly IUserHelper _userHelper;
         private readonly IConfiguration _configuration;
         private readonly ICountryRepository _countryRepository;
+        private readonly IMailHelper _mailHelper;
 
         public AccountController(
             IUserHelper userHelper, 
             IConfiguration configuration,
-            ICountryRepository countryRepository)
+            ICountryRepository countryRepository,
+            IMailHelper mailHelper)
         {
             _userHelper = userHelper;
             _configuration = configuration;
             _countryRepository = countryRepository;
+            _mailHelper = mailHelper;
         }
 
 
@@ -114,17 +118,30 @@ namespace SuperShop.Controllers
 
                     await _userHelper.AddUserToRoleAsync(user, "Costumer");
 
-                    var loginViewModel = new LoginViewModel()
-                    {
-                        Password = model.Password,
-                        RememberMe = false,
-                        Username = model.UserName
-                    };
+                    //var loginViewModel = new LoginViewModel()
+                    //{
+                    //    Password = model.Password,
+                    //    RememberMe = false,
+                    //    Username = model.UserName
+                    //};
 
-                    var result2 = await _userHelper.LoginAsync(loginViewModel);
-                    if (result2.Succeeded)
+                    //var result2 = await _userHelper.LoginAsync(loginViewModel);
+
+                    string myToken = await _userHelper.GenerateEmailConfirmationTokenASync(user);
+                    string tokenLink = Url.Action("ConfirmEmail", "Account", new
                     {
-                        return RedirectToAction("Index", "Home");
+                        userid = user.Id,
+                        token = myToken
+                    },protocol: HttpContext.Request.Scheme);
+
+                    Response response = _mailHelper.SendEmail(model.UserName, "Email confirmation", $"<h1>Email Confirmation</h1>" +
+                         $"To allow the user," +
+                         $"please click in this link:<br></br><a href = \"{tokenLink}\">Confirm Email</a>)");
+
+                    if (response.IsSucess)
+                    {
+                        ViewBag.Message = "The instructions to allow the user has been sent to  email";
+                        return View(model);
                     }
 
                     ModelState.AddModelError(string.Empty, "The user could not be logged");
@@ -297,6 +314,28 @@ namespace SuperShop.Controllers
             }
 
             return BadRequest();
+        }
+
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            {
+                return NotFound();
+            }
+
+            var user = await _userHelper.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userHelper.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                return NotFound();
+            }
+
+            return View();
         }
     }
 }
