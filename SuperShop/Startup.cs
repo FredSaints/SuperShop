@@ -10,6 +10,7 @@ using SuperShop.Data;
 using SuperShop.Data.Entities;
 using SuperShop.Helpers;
 using System.Text;
+using Vereyon.Web;
 
 namespace SuperShop
 {
@@ -56,6 +57,8 @@ namespace SuperShop
                 });
 
 
+
+            services.AddFlashMessage();
 
             services.AddDbContext<DataContext>(cfg =>
             {

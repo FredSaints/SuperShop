@@ -3,18 +3,24 @@ using Microsoft.AspNetCore.Mvc;
 using SuperShop.Data;
 using SuperShop.Data.Entities;
 using SuperShop.Models;
+using System;
 using System.Threading.Tasks;
+using Vereyon.Web;
 
 namespace SuperShop.Controllers
 {
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin")]
     public class CountriesController : Controller
     {
         private readonly ICountryRepository _countryRepository;
+        private readonly IFlashMessage _flashMessage;
 
-        public CountriesController(ICountryRepository countryRepository)
+        public CountriesController(
+            ICountryRepository countryRepository,
+            IFlashMessage flashMessage)
         {
             _countryRepository = countryRepository;
+            _flashMessage = flashMessage;
         }
 
         public async Task<IActionResult> DeleteCity(int? id)
@@ -31,7 +37,7 @@ namespace SuperShop.Controllers
             }
 
             var countryId = await _countryRepository.DeleteCityAsync(city);
-            return this.RedirectToAction($"Details", new {id = countryId});
+            return this.RedirectToAction($"Details", new { id = countryId });
         }
 
         public async Task<IActionResult> EditCity(int? id)
@@ -61,7 +67,7 @@ namespace SuperShop.Controllers
                     return this.RedirectToAction($"Details", new { id = countryId });
                 }
             }
-            
+
             return this.View(city);
         }
 
@@ -120,8 +126,16 @@ namespace SuperShop.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _countryRepository.CreateAsync(country);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await _countryRepository.CreateAsync(country);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception)
+                {
+                    _flashMessage.Danger($"This country already exists");
+                }
+                return View(country);
             }
             return View(country);
         }

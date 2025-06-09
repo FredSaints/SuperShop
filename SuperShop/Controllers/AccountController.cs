@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Bcpg;
 using SuperShop.Data;
 using SuperShop.Data.Entities;
 using SuperShop.Helpers;
@@ -25,7 +24,7 @@ namespace SuperShop.Controllers
         private readonly IMailHelper _mailHelper;
 
         public AccountController(
-            IUserHelper userHelper, 
+            IUserHelper userHelper,
             IConfiguration configuration,
             ICountryRepository countryRepository,
             IMailHelper mailHelper)
@@ -107,7 +106,7 @@ namespace SuperShop.Controllers
                         City = city
                     };
 
-                  
+
 
                     var result = await _userHelper.AddUserAsync(user, model.Password);
                     if (result != IdentityResult.Success)
@@ -132,11 +131,11 @@ namespace SuperShop.Controllers
                     {
                         userid = user.Id,
                         token = myToken
-                    },protocol: HttpContext.Request.Scheme);
+                    }, protocol: HttpContext.Request.Scheme);
 
                     Response response = _mailHelper.SendEmail(model.UserName, "Email confirmation", $"<h1>Email Confirmation</h1>" +
                          $"To allow the user," +
-                         $"please click in this link:<br></br><a href = \"{tokenLink}\">Confirm Email</a>)");
+                         $"please click in this link:<br></br><a href = \"{tokenLink}\">Confirm Email</a>");
 
                     if (response.IsSucess)
                     {
@@ -161,7 +160,7 @@ namespace SuperShop.Controllers
                 model.LastName = user.LastName;
                 model.PhoneNumber = user.PhoneNumber;
                 model.Address = user.Address;
-                
+
                 var city = await _countryRepository.GetCityAsync(user.CityId);
                 if (city is not null)
                 {
@@ -336,6 +335,67 @@ namespace SuperShop.Controllers
             }
 
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RecoverPassword(RecoverPasswordViewModel model)
+        {
+            if (this.ModelState.IsValid)
+            {
+                var user = await _userHelper.GetUserByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "The email doesn't correspond to a registered user");
+                    return View(model);
+                }
+
+                var myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+
+                var link = this.Url.Action("ResetPassword", "Account", 
+                    new{token = myToken}, protocol: HttpContext.Request.Scheme);
+
+                Response response = _mailHelper.SendEmail(model.Email, "Recover Password", $"<h1>Recover Password</h1>" +
+                    $"To recover the password, please click in this link:<br></br>" +
+                    $"<a href = \"{link}\">Reset Password</a>");
+
+                if (response.IsSucess)
+                {
+                    this.ViewBag.Message = "The instructions to recover the password have been sent to your email";
+                }
+                return View(model);
+            }
+            return View(model);
+        }
+
+        public IActionResult ResetPassword(string token)
+        {
+            return View();
+        }
+
+        public IActionResult RecoverPasswor()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            var user = await _userHelper.GetUserByEmailAsync(model.UserName);
+            if (user != null)
+            {
+                var result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
+                if (result.Succeeded)
+                {
+                    this.ViewBag.Message = "Password reset successful.";
+                    return this.View();
+                }
+
+                this.ViewBag.Message = "Error while resetting the password.";
+                return View(model);
+            }
+
+            this.ViewBag.Message = "User not found.";
+            return View(model);
         }
     }
 }
